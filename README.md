@@ -274,10 +274,8 @@ BUILD SUCCESS
 หรือใช้ Maven หาก `pom.xml` มีการกำหนด Plugin สำหรับการ Run ไว้
 
 ```bash
-mvn exec:java
+mvn exec:java -Dexec.mainClass="com.interruptsimulator.Main"
 ```
-
-หากโปรเจกต์ไม่ได้กำหนด `exec-maven-plugin` สามารถ Run ผ่าน IDE ได้โดยตรง
 
 ---
 
