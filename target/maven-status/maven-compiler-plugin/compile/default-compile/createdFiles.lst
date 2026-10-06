@@ -1,6 +1,7 @@
 com/interruptsimulator/InterruptQueue.class
 com/interruptsimulator/SimulatorGUI.class
 com/interruptsimulator/InterruptVectorTable.class
+com/interruptsimulator/InterruptIllustrationPanel.class
 com/interruptsimulator/Main.class
 com/interruptsimulator/CPU.class
 com/interruptsimulator/Process.class

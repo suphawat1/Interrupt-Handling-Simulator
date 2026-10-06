@@ -2,6 +2,7 @@
 /Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/Interrupt.java
 /Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/InterruptController.java
 /Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/InterruptHandler.java
+/Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/InterruptIllustrationPanel.java
 /Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/InterruptQueue.java
 /Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/InterruptQueuePanel.java
 /Users/suphawat/Documents/OS/Final-Project/interrupt-handling-simulator/src/main/java/com/interruptsimulator/InterruptVectorTable.java

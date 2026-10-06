@@ -734,7 +734,7 @@ public class StateDiagramPanel extends JPanel {
 
 
         g.drawString(
-                "ONLINE",
+                "Active",
                 indicatorX + 12,
                 21
         );
