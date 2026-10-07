@@ -1,4 +1,6 @@
 package com.interruptsimulator;
+import com.interruptsimulator.view.SimulatorGUI;
+
 
 public class Main {
 

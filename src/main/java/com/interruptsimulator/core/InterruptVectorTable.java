@@ -1,4 +1,4 @@
-package com.interruptsimulator;
+package com.interruptsimulator.core;
 
 import java.util.HashMap;
 import java.util.Map;

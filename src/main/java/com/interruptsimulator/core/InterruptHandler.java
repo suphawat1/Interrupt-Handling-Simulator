@@ -1,4 +1,6 @@
-package com.interruptsimulator;
+package com.interruptsimulator.core;
+import com.interruptsimulator.model.Interrupt;
+
 
 public class InterruptHandler {
 

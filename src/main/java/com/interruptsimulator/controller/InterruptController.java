@@ -1,4 +1,9 @@
-package com.interruptsimulator;
+package com.interruptsimulator.controller;
+import com.interruptsimulator.core.InterruptHandler;
+import com.interruptsimulator.core.InterruptQueue;
+import com.interruptsimulator.core.InterruptVectorTable;
+import com.interruptsimulator.model.Interrupt;
+
 
 public class InterruptController {
 

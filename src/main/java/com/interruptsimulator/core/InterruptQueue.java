@@ -1,4 +1,6 @@
-package com.interruptsimulator;
+package com.interruptsimulator.core;
+import com.interruptsimulator.model.Interrupt;
+
 
 import java.util.Comparator;
 import java.util.PriorityQueue;

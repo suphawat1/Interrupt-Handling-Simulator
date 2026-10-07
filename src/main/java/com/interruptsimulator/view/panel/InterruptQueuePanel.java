@@ -1,4 +1,7 @@
-package com.interruptsimulator;
+package com.interruptsimulator.view.panel;
+import com.interruptsimulator.core.InterruptQueue;
+import com.interruptsimulator.model.Interrupt;
+
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;

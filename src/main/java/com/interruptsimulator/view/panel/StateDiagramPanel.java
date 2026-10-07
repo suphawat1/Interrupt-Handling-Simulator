@@ -1,4 +1,4 @@
-package com.interruptsimulator;
+package com.interruptsimulator.view.panel;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;

@@ -1,4 +1,16 @@
-package com.interruptsimulator;
+package com.interruptsimulator.view;
+import com.interruptsimulator.controller.InterruptController;
+import com.interruptsimulator.controller.SimulationController;
+import com.interruptsimulator.controller.SimulationListener;
+import com.interruptsimulator.core.CPU;
+import com.interruptsimulator.model.Interrupt;
+import com.interruptsimulator.model.PCB;
+import com.interruptsimulator.model.Process;
+import com.interruptsimulator.model.SimulationState;
+import com.interruptsimulator.view.panel.InterruptIllustrationPanel;
+import com.interruptsimulator.view.panel.InterruptQueuePanel;
+import com.interruptsimulator.view.panel.StateDiagramPanel;
+
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -9,7 +21,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JProgressBar;
-import javax.swing.Timer;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -18,7 +29,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 
-public class SimulatorGUI {
+public class SimulatorGUI implements SimulationListener {
 
     private JFrame frame;
 
@@ -84,64 +95,15 @@ public class SimulatorGUI {
     private JTextArea logArea;
 
 
-    /*
-     * ============================================================
-     * CORE SYSTEM
-     * ============================================================
-     */
-
-    private CPU cpu;
-
-    private Process process;
-
-    private InterruptController interruptController;
-
-    private SimulationState simulationState;
-
 
     /*
      * ============================================================
-     * ANIMATION
+     * CONTROLLER
      * ============================================================
      */
 
-    private Timer animationTimer;
+    private SimulationController controller;
 
-    private int animationStep;
-
-    private int interruptId;
-
-    private Interrupt currentInterrupt;
-
-    private PCB currentPCB;
-
-    private boolean autoMode = false;
-
-    private int interruptCount;
-
-
-    /*
-     * ============================================================
-     * TIMING
-     * ============================================================
-     *
-     * ระยะเวลาของแต่ละ STEP
-     *
-     * NORMAL_STEP_DELAY
-     * ใช้กับ STEP ปกติ
-     *
-     * ISR_STEP_DELAY
-     * ให้ ISR ค้างนานขึ้น เพื่อให้เห็นว่ากำลังทำงาน
-     *
-     * RESUME_STEP_DELAY
-     * ให้สถานะ RESUMED ค้างไว้ก่อนกลับ RUNNING
-     */
-
-    private static final int NORMAL_STEP_DELAY = 2600;
-
-    private static final int ISR_STEP_DELAY = 3200;
-
-    private static final int RESUME_STEP_DELAY = 2800;
 
 
     /*
@@ -152,7 +114,12 @@ public class SimulatorGUI {
 
     public SimulatorGUI() {
 
-        initializeSystem();
+        controller =
+                new SimulationController();
+
+        controller.setListener(
+                this
+        );
 
         createGUI();
 
@@ -164,45 +131,6 @@ public class SimulatorGUI {
         addLog("Process P1 loaded into CPU");
         addLog("Simulation state: READY");
         addLog("================================");
-    }
-
-
-    /*
-     * ============================================================
-     * INITIALIZE SYSTEM
-     * ============================================================
-     */
-
-    private void initializeSystem() {
-
-        cpu = new CPU();
-
-        process = new Process(
-                1,
-                "P1"
-        );
-
-        interruptController =
-                new InterruptController();
-
-        cpu.loadProcess(
-                process
-        );
-
-        simulationState =
-                SimulationState.READY;
-
-        interruptId = 1;
-
-        interruptCount = 0;
-
-        animationStep = 0;
-
-        currentInterrupt = null;
-
-        currentPCB = null;
-
-        autoMode = false;
     }
 
 
@@ -1146,884 +1074,69 @@ public class SimulatorGUI {
     }
 
 
+
     /*
      * ============================================================
-     * EXECUTE PROCESS
+     * ACTIONS -> SimulationController
      * ============================================================
      */
 
     private void executeProcess() {
 
-        if (animationTimer != null) {
-
-            addLog(
-                    "Cannot execute while "
-                    + "interrupt handling is active or paused"
-            );
-
-            return;
-        }
-
-
-        if (!process.getState().equals(
-                "RUNNING"
-        )) {
-
-            addLog(
-                    "Cannot execute process. "
-                    + "Current state: "
-                    + process.getState()
-            );
-
-            return;
-        }
-
-
-        simulationState =
-                SimulationState.RUNNING;
-
-
-        cpu.execute();
-
-
-        updateDisplay();
-
-
-        addLog(
-                "CPU executed Process P1"
-        );
-
-
-        addLog(
-                "PC = "
-                + process.getProgramCounter()
-        );
+        controller.executeProcess();
     }
-
-
-    /*
-     * ============================================================
-     * GENERATE INTERRUPT
-     * ============================================================
-     */
 
     private void generateInterrupt(
             String type,
             int priority) {
 
-        if (animationTimer != null) {
-
-            addLog(
-                    "Cannot generate interrupt "
-                    + "during animation"
-            );
-
-            return;
-        }
-
-
-        Interrupt interrupt =
-                new Interrupt(
-                        interruptId++,
-                        type,
-                        priority
-                );
-
-
-        interruptController.receiveInterrupt(
-                interrupt
-        );
-
-
-        interruptCount++;
-
-
-        simulationState =
-                SimulationState.INTERRUPT_RECEIVED;
-
-
-        /*
-         * ส่ง state จริงไปทั้งสอง visualization
-         */
-
-        updateDisplay();
-
-
-        addLog(
-                "--------------------------------"
-        );
-
-
-        addLog(
-                "Interrupt received"
-        );
-
-
-        addLog(
-                "Type: "
-                + type
-                + " | Priority: "
-                + priority
-                + " | ID: "
-                + interrupt.getInterruptId()
-        );
-
-
-        addLog(
-                "Added to interrupt queue"
+        controller.generateInterrupt(
+                type,
+                priority
         );
     }
-
-
-    /*
-     * ============================================================
-     * START INTERRUPT HANDLING
-     * ============================================================
-     */
 
     private void startInterruptHandling() {
 
-        if (!interruptController.hasInterrupt()) {
-
-            addLog(
-                    "No interrupt in queue"
-            );
-
-            return;
-        }
-
-
-        /*
-         * ถ้ามี Timer อยู่
-         * หมายถึงกำลังทำงานหรือถูก Pause
-         */
-
-        if (animationTimer != null) {
-
-            addLog(
-                    "Interrupt handling is "
-                    + "already running or paused"
-            );
-
-            return;
-        }
-
-
-        animationStep = 1;
-
-        currentInterrupt = null;
-
-        currentPCB = null;
-
-
-        addLog(
-                "================================"
-        );
-
-
-        addLog(
-                "Starting interrupt handling"
-        );
-
-
-        /*
-         * Timer เป็นตัวควบคุม Timeline จริง
-         *
-         * ทุกครั้งที่ Timer tick
-         * จะเปลี่ยน SimulationState
-         */
-
-        animationTimer =
-                new Timer(
-                        NORMAL_STEP_DELAY,
-                        e -> processAnimation()
-                );
-
-
-        animationTimer.start();
+        controller.startInterruptHandling();
     }
-
-
-    /*
-     * ============================================================
-     * PROCESS ANIMATION
-     * ============================================================
-     *
-     * State ของระบบจริงถูกเปลี่ยนที่นี่
-     *
-     * StateDiagramPanel
-     * และ
-     * InterruptIllustrationPanel
-     *
-     * จะได้รับ state เดียวกันผ่าน updateDisplay()
-     */
-
-    private void processAnimation() {
-
-        switch (animationStep) {
-
-
-            /*
-             * ====================================================
-             * STEP 1
-             * INTERRUPT RECEIVED
-             * ====================================================
-             */
-
-            case 1:
-
-                simulationState =
-                        SimulationState.INTERRUPT_RECEIVED;
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 1: Interrupt received"
-                );
-
-
-                Interrupt pendingInterrupt =
-                        interruptController
-                                .peekNextInterrupt();
-
-
-                if (pendingInterrupt != null) {
-
-                    addLog(
-                            "Interrupt: "
-                            + pendingInterrupt.getType()
-                    );
-                }
-
-
-                animationTimer.setDelay(
-                        NORMAL_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 2
-             * SAVE CONTEXT
-             * ====================================================
-             */
-
-            case 2:
-
-                simulationState =
-                        SimulationState.SAVING_CONTEXT;
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 2: Saving CPU context"
-                );
-
-
-                currentPCB =
-                        cpu.saveContext();
-
-
-                if (currentPCB != null) {
-
-                    addLog(
-                            "Context saved to PCB:"
-                    );
-
-
-                    addLog(
-                            currentPCB.toString()
-                    );
-                }
-
-
-                animationTimer.setDelay(
-                        NORMAL_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 3
-             * INTERRUPTED
-             * ====================================================
-             */
-
-            case 3:
-
-                simulationState =
-                        SimulationState.INTERRUPTED;
-
-
-                process.setState(
-                        "INTERRUPTED"
-                );
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 3: Process interrupted"
-                );
-
-
-                addLog(
-                        "Process P1 state: "
-                        + "RUNNING -> INTERRUPTED"
-                );
-
-
-                animationTimer.setDelay(
-                        NORMAL_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 4
-             * LOOKUP HANDLER
-             * ====================================================
-             */
-
-            case 4:
-
-                simulationState =
-                        SimulationState.LOOKUP_HANDLER;
-
-
-                currentInterrupt =
-                        interruptController
-                                .getNextInterrupt();
-
-
-                /*
-                 * ส่ง Interrupt จริง
-                 * ไปให้ Illustration
-                 */
-
-                if (interruptIllustrationPanel != null) {
-
-                    interruptIllustrationPanel.setInterrupt(
-                            currentInterrupt
-                    );
-                }
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 4: Looking up "
-                        + "Interrupt Vector Table"
-                );
-
-
-                if (currentInterrupt != null) {
-
-                    addLog(
-                            "Interrupt: "
-                            + currentInterrupt.getType()
-                    );
-
-
-                    if (interruptController
-                            .getVectorTable()
-                            .contains(
-                                    currentInterrupt.getType()
-                            )) {
-
-                        addLog(
-                                "ISR found: "
-                                + currentInterrupt.getType()
-                                + " Interrupt Service Routine"
-                        );
-                    }
-                }
-
-
-                animationTimer.setDelay(
-                        NORMAL_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 5
-             * ISR EXECUTING
-             * ====================================================
-             */
-
-            case 5:
-
-                simulationState =
-                        SimulationState.ISR_EXECUTING;
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 5: Executing ISR"
-                );
-
-
-                if (currentInterrupt != null) {
-
-                    String result =
-                            interruptController
-                                    .handleInterrupt(
-                                            currentInterrupt
-                                    );
-
-
-                    addLog(
-                            result
-                    );
-                }
-
-
-                /*
-                 * ISR ค้างนานกว่า State อื่น
-                 */
-
-                animationTimer.setDelay(
-                        ISR_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 6
-             * RESTORE CONTEXT
-             * ====================================================
-             */
-
-            case 6:
-
-                simulationState =
-                        SimulationState.RESTORING_CONTEXT;
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 6: Restoring CPU context"
-                );
-
-
-                if (currentPCB != null) {
-
-                    addLog(
-                            "Restoring context from PCB:"
-                    );
-
-
-                    addLog(
-                            "PID="
-                            + currentPCB.getProcessId()
-                            + ", PC="
-                            + currentPCB.getProgramCounter()
-                            + ", A="
-                            + currentPCB.getRegisterA()
-                            + ", B="
-                            + currentPCB.getRegisterB()
-                    );
-                }
-
-
-                cpu.restoreContext();
-
-
-                animationTimer.setDelay(
-                        NORMAL_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 7
-             * RESUMED
-             * ====================================================
-             */
-
-            case 7:
-
-                simulationState =
-                        SimulationState.RESUMED;
-
-
-                process.setState(
-                        "RUNNING"
-                );
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "STEP 7: Process P1 resumed"
-                );
-
-
-                addLog(
-                        "Process P1 state: "
-                        + "INTERRUPTED -> RUNNING"
-                );
-
-
-                addLog(
-                        "PC restored to "
-                        + process.getProgramCounter()
-                );
-
-
-                /*
-                 * ค้าง RESUMED
-                 * เพื่อให้เห็น transition
-                 */
-
-                animationTimer.setDelay(
-                        RESUME_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 8
-             * RUNNING
-             * ====================================================
-             */
-
-            case 8:
-
-                simulationState =
-                        SimulationState.RUNNING;
-
-
-                process.setState(
-                        "RUNNING"
-                );
-
-
-                updateDisplay();
-
-
-                addLog(
-                        "Process P1 is RUNNING again"
-                );
-
-
-                animationTimer.setDelay(
-                        NORMAL_STEP_DELAY
-                );
-
-                break;
-
-
-            /*
-             * ====================================================
-             * STEP 9
-             * COMPLETE
-             * ====================================================
-             */
-
-            case 9:
-
-                if (!autoMode) {
-
-                    simulationState =
-                            SimulationState.RUNNING;
-
-
-                    process.setState(
-                            "RUNNING"
-                    );
-
-
-                    updateDisplay();
-
-
-                    addLog(
-                            "Interrupt handling completed"
-                    );
-
-
-                    addLog(
-                            "Process P1 is RUNNING..."
-                    );
-
-
-                    animationTimer.stop();
-
-                    animationTimer = null;
-
-                    currentInterrupt = null;
-
-                    currentPCB = null;
-                }
-
-
-                else if (
-                        interruptController.hasInterrupt()
-                ) {
-
-                    addLog(
-                            "Next interrupt in queue..."
-                    );
-
-
-                    currentInterrupt = null;
-
-                    currentPCB = null;
-
-
-                    /*
-                     * เริ่ม interrupt ตัวถัดไป
-                     *
-                     * รอบใหม่เริ่มจาก STEP 1
-                     */
-
-                    animationStep = 0;
-                }
-
-
-                else {
-
-                    simulationState =
-                            SimulationState.RUNNING;
-
-
-                    process.setState(
-                            "RUNNING"
-                    );
-
-
-                    updateDisplay();
-
-
-                    addLog(
-                            "Interrupt handling completed"
-                    );
-
-
-                    addLog(
-                            "Process P1 is RUNNING"
-                    );
-
-
-                    addLog(
-                            "================================"
-                    );
-
-
-                    addLog(
-                            "AUTO SIMULATION COMPLETED"
-                    );
-
-
-                    addLog(
-                            "================================"
-                    );
-
-
-                    animationTimer.stop();
-
-                    animationTimer = null;
-
-                    currentInterrupt = null;
-
-                    currentPCB = null;
-
-                    autoMode = false;
-                }
-
-                break;
-
-
-            default:
-
-                break;
-        }
-
-
-        /*
-         * ========================================================
-         * NEXT STEP
-         * ========================================================
-         */
-
-        if (animationTimer != null
-                && animationStep < 9) {
-
-            animationStep++;
-        }
-    }
-
-
-    /*
-     * ============================================================
-     * PAUSE / RESUME
-     * ============================================================
-     */
 
     private void togglePause() {
 
-        if (animationTimer == null) {
-
-            addLog(
-                    "No animation is running"
-            );
-
-            return;
-        }
-
-
-        if (animationTimer.isRunning()) {
-
-            animationTimer.stop();
-
-
-            addLog(
-                    "Simulation paused"
-            );
-
-        } else {
-
-            animationTimer.start();
-
-
-            addLog(
-                    "Simulation resumed"
-            );
-        }
+        controller.togglePause();
     }
-
-
-    /*
-     * ============================================================
-     * AUTO SIMULATION
-     * ============================================================
-     */
 
     private void autoSimulation() {
 
-        if (animationTimer != null) {
+        controller.autoSimulation();
+    }
 
-            addLog(
-                    "Simulation already running"
-            );
+    private void resetSimulator() {
 
-            return;
-        }
-
-
-        if (!interruptController.hasInterrupt()) {
-
-            addLog(
-                    "================================"
-            );
-
-
-            addLog(
-                    "AUTO SIMULATION STARTED"
-            );
-
-
-            /*
-             * เพิ่ม Interrupt 4 ตัว
-             *
-             * Timer     = Priority 1
-             * Keyboard  = Priority 2
-             * Disk      = Priority 1
-             * Network   = Priority 3
-             */
-
-            generateInterrupt(
-                    "Timer",
-                    1
-            );
-
-
-            generateInterrupt(
-                    "Keyboard",
-                    2
-            );
-
-
-            generateInterrupt(
-                    "Disk",
-                    1
-            );
-
-
-            generateInterrupt(
-                    "Network",
-                    3
-            );
-
-        } else {
-
-            addLog(
-                    "================================"
-            );
-
-
-            addLog(
-                    "AUTO SIMULATION STARTED"
-            );
-
-
-            addLog(
-                    "Using existing interrupt queue"
-            );
-        }
-
-
-        autoMode = true;
-
-
-        startInterruptHandling();
+        controller.reset();
     }
 
 
     /*
      * ============================================================
-     * RESET
+     * SimulationListener (Controller -> View)
      * ============================================================
      */
 
-    private void resetSimulator() {
+    @Override
+    public void onLog(String message) {
 
-        if (animationTimer != null) {
+        addLog(message);
+    }
 
-            animationTimer.stop();
+    @Override
+    public void onStateChanged() {
 
-            animationTimer = null;
-        }
+        updateDisplay();
+    }
 
-
-        initializeSystem();
-
+    @Override
+    public void onReset() {
 
         if (logArea != null) {
 
@@ -2104,6 +1217,7 @@ public class SimulatorGUI {
     }
 
 
+
     /*
      * ============================================================
      * UPDATE DISPLAY
@@ -2124,6 +1238,23 @@ public class SimulatorGUI {
      */
 
     private void updateDisplay() {
+
+        SimulationState simulationState =
+                controller.getSimulationState();
+        Process process =
+                controller.getProcess();
+        CPU cpu =
+                controller.getCpu();
+        InterruptController interruptController =
+                controller.getInterruptController();
+        Interrupt currentInterrupt =
+                controller.getCurrentInterrupt();
+        PCB currentPCB =
+                controller.getCurrentPCB();
+        int interruptCount =
+                controller.getInterruptCount();
+        int animationStep =
+                controller.getAnimationStep();
 
         /*
          * ========================================================

@@ -1,4 +1,7 @@
-package com.interruptsimulator;
+package com.interruptsimulator.core;
+import com.interruptsimulator.model.PCB;
+import com.interruptsimulator.model.Process;
+
 
 public class CPU {
 

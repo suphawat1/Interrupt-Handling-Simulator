@@ -1,4 +1,4 @@
-package com.interruptsimulator;
+package com.interruptsimulator.model;
 
 public class PCB {
 
