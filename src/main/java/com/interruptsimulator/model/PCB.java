@@ -6,7 +6,7 @@ public class PCB {
     private int programCounter;
     private int registerA;
     private int registerB;
-    private String state;
+    private ProcessState state;
 
     public PCB(Process process) {
         this.processId = process.getProcessId();
@@ -32,7 +32,7 @@ public class PCB {
         return registerB;
     }
 
-    public String getState() {
+    public ProcessState getState() {
         return state;
     }
 

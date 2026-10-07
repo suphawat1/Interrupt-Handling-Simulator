@@ -4,7 +4,7 @@ public class Process {
 
     private int processId;
     private String processName;
-    private String state;
+    private ProcessState state;
 
     private int programCounter;
     private int registerA;
@@ -15,7 +15,7 @@ public class Process {
         this.processId = processId;
         this.processName = processName;
 
-        state = "READY";
+        state = ProcessState.READY;
 
         programCounter = 0;
         registerA = 0;
@@ -24,14 +24,14 @@ public class Process {
 
     public void run() {
 
-        state = "RUNNING";
+        state = ProcessState.RUNNING;
 
         programCounter += 10;
         registerA += 5;
         registerB += 2;
     }
 
-    public void setState(String state) {
+    public void setState(ProcessState state) {
         this.state = state;
     }
 
@@ -48,7 +48,7 @@ public class Process {
         registerA = pcb.getRegisterA();
         registerB = pcb.getRegisterB();
 
-        state = "RUNNING";
+        state = ProcessState.RUNNING;
     }
 
     public int getProcessId() {
@@ -59,7 +59,7 @@ public class Process {
         return processName;
     }
 
-    public String getState() {
+    public ProcessState getState() {
         return state;
     }
 

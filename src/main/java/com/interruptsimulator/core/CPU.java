@@ -1,4 +1,6 @@
 package com.interruptsimulator.core;
+
+import com.interruptsimulator.model.ProcessState;
 import com.interruptsimulator.model.PCB;
 import com.interruptsimulator.model.Process;
 
@@ -16,7 +18,7 @@ public class CPU {
 
         currentProcess = process;
 
-        currentProcess.setState("RUNNING");
+        currentProcess.setState(ProcessState.RUNNING);
     }
 
     public void execute() {
@@ -25,7 +27,7 @@ public class CPU {
             return;
         }
 
-        if (!currentProcess.getState().equals("RUNNING")) {
+        if (currentProcess.getState() != ProcessState.RUNNING) {
             return;
         }
 
@@ -45,7 +47,7 @@ public class CPU {
 
         savedPCB = new PCB(currentProcess);
 
-        currentProcess.setState("INTERRUPTED");
+        currentProcess.setState(ProcessState.INTERRUPTED);
 
         contextSaveCount++;
 

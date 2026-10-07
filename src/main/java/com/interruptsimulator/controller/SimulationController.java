@@ -1,4 +1,6 @@
 package com.interruptsimulator.controller;
+
+import com.interruptsimulator.model.ProcessState;
 import com.interruptsimulator.core.CPU;
 import com.interruptsimulator.model.Interrupt;
 import com.interruptsimulator.model.PCB;
@@ -197,9 +199,7 @@ public class SimulationController {
         }
 
 
-        if (!process.getState().equals(
-                "RUNNING"
-        )) {
+        if (process.getState() != ProcessState.RUNNING) {
 
             addLog(
                     "Cannot execute process. "
@@ -495,9 +495,7 @@ public class SimulationController {
                         SimulationState.INTERRUPTED;
 
 
-                process.setState(
-                        "INTERRUPTED"
-                );
+                process.setState(ProcessState.INTERRUPTED);
 
 
                 updateDisplay();
@@ -691,9 +689,7 @@ public class SimulationController {
                         SimulationState.RESUMED;
 
 
-                process.setState(
-                        "RUNNING"
-                );
+                process.setState(ProcessState.RUNNING);
 
 
                 updateDisplay();
@@ -741,9 +737,7 @@ public class SimulationController {
                         SimulationState.RUNNING;
 
 
-                process.setState(
-                        "RUNNING"
-                );
+                process.setState(ProcessState.RUNNING);
 
 
                 updateDisplay();
@@ -776,9 +770,7 @@ public class SimulationController {
                             SimulationState.RUNNING;
 
 
-                    process.setState(
-                            "RUNNING"
-                    );
+                    process.setState(ProcessState.RUNNING);
 
 
                     updateDisplay();
@@ -834,9 +826,7 @@ public class SimulationController {
                             SimulationState.RUNNING;
 
 
-                    process.setState(
-                            "RUNNING"
-                    );
+                    process.setState(ProcessState.RUNNING);
 
 
                     updateDisplay();
