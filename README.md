@@ -239,8 +239,7 @@ interrupt-handling-simulator/
 ├── pom.xml
 ├── .gitignore
 │
-├── docs/
-│   └── รายงานโครงงานรายวิชาos.pdf
+├── รายงานโครงงานรายวิชาos.pdf
 │
 └── src/
     ├── main/java/com/interruptsimulator/
